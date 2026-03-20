@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sistema Bancário</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      color: #1a1a1a;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+      color: #1a1a1a;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 1.5rem;
+    }
+
+    .metric {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1rem;
+      border: 1px solid #e0e0e0;
+    }
+
+    .metric-label {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 6px;
+    }
+
+    .metric-value {
+      font-size: 24px;
+      font-weight: 500;
+      color: #1a1a1a;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 1rem;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 1rem;
+    }
+
+    .tab {
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      background: transparent;
+      color: #666;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      background: #f0f0f0;
+      color: #1a1a1a;
+      font-weight: 500;
+    }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .form-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .form-row input,
+    .form-row select {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      background: #fff;
+      color: #1a1a1a;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      background: transparent;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .btn-primary { background: #185FA5; color: #fff; border-color: #185FA5; }
+    .btn-primary:hover { background: #0C447C; }
+    .btn-success { background: #0F6E56; color: #fff; border-color: #0F6E56; }
+    .btn-success:hover { background: #085041; }
+    .btn-danger { background: #993C1D; color: #fff; border-color: #993C1D; }
+    .btn-danger:hover { background: #712B13; }
+
+    .account-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .account-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .account-name { font-weight: 500; }
+    .account-balance { color: #0F6E56; font-weight: 500; }
+
+    .extrato-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .extrato-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+
+    .extrato-plus { color: #0F6E56; font-weight: 500; }
+    .extrato-minus { color: #993C1D; font-weight: 500; }
+
+    .msg {
+      font-size: 13px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-top: 8px;
+    }
+
+    .msg.success { background: #E1F5EE; color: #085041; }
+    .msg.error { background: #FAECE7; color: #712B13; }
+
+    .empty {
+      font-size: 13px;
+      color: #999;
+      text-align: center;
+      padding: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🏦 Sistema Bancário</h1>
+
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-label">Total de contas</div>
+      <div class="metric-value" id="total-contas">0</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Saldo total</div>
+      <div class="metric-value" id="saldo-total">R$ 0,00</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Transações</div>
+      <div class="metric-value" id="total-trans">0</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('criar')">Criar conta</button>
+      <button class="tab" onclick="switchTab('operacoes')">Operações</button>
+      <button class="tab" onclick="switchTab('contas')">Contas</button>
+      <button class="tab" onclick="switchTab('extrato')">Extrato</button>
+    </div>
+
+    <div id="panel-criar" class="panel active">
+      <div class="card-title">Nova conta</div>
+      <div class="form-row">
+        <input type="text" id="novo-nome" placeholder="Nome do titular" />
+      </div>
+      <div class="form-row">
+        <input type="number" id="novo-saldo" placeholder="Saldo inicial (R$)" min="0" />
+        <button class="btn btn-primary" onclick="criarConta()">Criar</button>
+      </div>
+      <div id="msg-criar"></div>
+    </div>
+
+    <div id="panel-operacoes" class="panel">
+      <div class="card-title">Depósito / Saque</div>
+      <div class="form-row">
+        <select id="op-conta"></select>
+      </div>
+      <div class="form-row">
+        <input type="number" id="op-valor" placeholder="Valor (R$)" min="0" />
+      </div>
+      <div class="form-row">
+        <button class="btn btn-success" onclick="operacao('deposito')">Depositar</button>
+        <button class="btn btn-danger" onclick="operacao('saque')">Sacar</button>
+      </div>
+      <div id="msg-op"></div>
+    </div>
+
+    <div id="panel-contas" class="panel">
+      <div class="card-title">Todas as contas</div>
+      <div class="account-list" id="lista-contas">
+        <div class="empty">Nenhuma conta cadastrada</div>
+      </div>
+    </div>
+
+    <div id="panel-extrato" class="panel">
+      <div class="card-title">Extrato</div>
+      <div class="form-row" style="margin-bottom: 1rem;">
+        <select id="ext-conta" onchange="renderExtrato()"></select>
+      </div>
+      <div class="extrato-list" id="lista-extrato">
+        <div class="empty">Selecione uma conta</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let contas = [];
+    let transacoes = 0;
+
+    function switchTab(tab) {
+      const nomes = ['criar', 'operacoes', 'contas', 'extrato'];
+      document.querySelectorAll('.tab').forEach((t, i) => {
+        t.classList.toggle('active', nomes[i] === tab);
+      });
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('panel-' + tab).classList.add('active');
+      if (tab === 'operacoes') atualizaSelectOp();
+      if (tab === 'contas') renderContas();
+      if (tab === 'extrato') { atualizaSelectExt(); renderExtrato(); }
+    }
+
+    function showMsg(id, txt, tipo) {
+      const el = document.getElementById(id);
+      el.innerHTML = `<div class="msg ${tipo}">${txt}</div>`;
+      setTimeout(() => el.innerHTML = '', 3000);
+    }
+
+    function atualizaMetrics() {
+      document.getElementById('total-contas').textContent = contas.length;
+      const total = contas.reduce((s, c) => s + c.saldo, 0);
+      document.getElementById('saldo-total').textContent = 'R$ ' + total.toFixed(2);
+      document.getElementById('total-trans').textContent = transacoes;
+    }
+
+    function criarConta() {
+      const nome = document.getElementById('novo-nome').value.trim();
+      const saldo = parseFloat(document.getElementById('novo-saldo').value);
+      if (!nome) return showMsg('msg-criar', 'Informe o nome do titular', 'error');
+      if (isNaN(saldo) || saldo < 0) return showMsg('msg-criar', 'Informe um saldo válido', 'error');
+      if (contas.find(c => c.nome.toLowerCase() === nome.toLowerCase()))
+        return showMsg('msg-criar', 'Já existe uma conta com esse nome', 'error');
+      contas.push({ nome, saldo, extrato: [{ desc: 'Abertura de conta', valor: saldo, tipo: 'plus' }] });
+      document.getElementById('novo-nome').value = '';
+      document.getElementById('novo-saldo').value = '';
+      atualizaMetrics();
+      showMsg('msg-criar', 'Conta criada com sucesso!', 'success');
+    }
+
+    function atualizaSelectOp() {
+      const sel = document.getElementById('op-conta');
+      sel.innerHTML = contas.length
+        ? contas.map(c => `<option>${c.nome}</option>`).join('')
+        : '<option>Nenhuma conta cadastrada</option>';
+    }
+
+    function atualizaSelectExt() {
+      const sel = document.getElementById('ext-conta');
+      sel.innerHTML = contas.length
+        ? contas.map(c => `<option>${c.nome}</option>`).join('')
+        : '<option>Nenhuma conta cadastrada</option>';
+    }
+
+    function operacao(tipo) {
+      const nome = document.getElementById('op-conta').value;
+      const valor = parseFloat(document.getElementById('op-valor').value);
+      const conta = contas.find(c => c.nome === nome);
+      if (!conta) return showMsg('msg-op', 'Conta não encontrada', 'error');
+      if (isNaN(valor) || valor <= 0) return showMsg('msg-op', 'Informe um valor válido', 'error');
+      if (tipo === 'saque' && valor > conta.saldo) return showMsg('msg-op', 'Saldo insuficiente', 'error');
+      if (tipo === 'deposito') {
+        conta.saldo += valor;
+        conta.extrato.push({ desc: 'Depósito', valor, tipo: 'plus' });
+        showMsg('msg-op', 'Depósito realizado com sucesso!', 'success');
+      } else {
+        conta.saldo -= valor;
+        conta.extrato.push({ desc: 'Saque', valor, tipo: 'minus' });
+        showMsg('msg-op', 'Saque realizado com sucesso!', 'success');
+      }
+      transacoes++;
+      document.getElementById('op-valor').value = '';
+      atualizaMetrics();
+    }
+
+    function renderContas() {
+      const el = document.getElementById('lista-contas');
+      if (!contas.length) { el.innerHTML = '<div class="empty">Nenhuma conta cadastrada</div>'; return; }
+      el.innerHTML = contas.map(c => `
+        <div class="account-item">
+          <span class="account-name">${c.nome}</span>
+          <span class="account-balance">R$ ${c.saldo.toFixed(2)}</span>
+        </div>`).join('');
+    }
+
+    function renderExtrato() {
+      const nome = document.getElementById('ext-conta').value;
+      const conta = contas.find(c => c.nome === nome);
+      const el = document.getElementById('lista-extrato');
+      if (!conta) { el.innerHTML = '<div class="empty">Selecione uma conta</div>'; return; }
+      el.innerHTML = [...conta.extrato].reverse().map(t => `
+        <div class="extrato-item">
+          <span>${t.desc}</span>
+          <span class="extrato-${t.tipo}">${t.tipo === 'plus' ? '+' : '-'} R$ ${t.valor.toFixed(2)}</span>
+        </div>`).join('');
+    }
+  </script>
+
+</body>
+</html>
