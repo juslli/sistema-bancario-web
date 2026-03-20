@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sistema Bancário</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <h1>🏦 Sistema Bancário</h1>
+
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-label">Total de contas</div>
+      <div class="metric-value" id="total-contas">0</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Saldo total</div>
+      <div class="metric-value" id="saldo-total">R$ 0,00</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Transações</div>
+      <div class="metric-value" id="total-trans">0</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('criar')">Criar conta</button>
+      <button class="tab" onclick="switchTab('operacoes')">Operações</button>
+      <button class="tab" onclick="switchTab('contas')">Contas</button>
+      <button class="tab" onclick="switchTab('extrato')">Extrato</button>
+    </div>
+
+    <div id="panel-criar" class="panel active">
+      <div class="card-title">Nova conta</div>
+      <div class="form-row">
+        <input type="text" id="novo-nome" placeholder="Nome do titular" />
+      </div>
+      <div class="form-row">
+        <input type="number" id="novo-saldo" placeholder="Saldo inicial (R$)" min="0" />
+        <button class="btn btn-primary" onclick="criarConta()">Criar</button>
+      </div>
+      <div id="msg-criar"></div>
+    </div>
+
+    <div id="panel-operacoes" class="panel">
+      <div class="card-title">Depósito / Saque</div>
+      <div class="form-row">
+        <select id="op-conta"></select>
+      </div>
+      <div class="form-row">
+        <input type="number" id="op-valor" placeholder="Valor (R$)" min="0" />
+      </div>
+      <div class="form-row">
+        <button class="btn btn-success" onclick="operacao('deposito')">Depositar</button>
+        <button class="btn btn-danger" onclick="operacao('saque')">Sacar</button>
+      </div>
+      <div id="msg-op"></div>
+    </div>
+
+    <div id="panel-contas" class="panel">
+      <div class="card-title">Todas as contas</div>
+      <div class="account-list" id="lista-contas">
+        <div class="empty">Nenhuma conta cadastrada</div>
+      </div>
+    </div>
+
+    <div id="panel-extrato" class="panel">
+      <div class="card-title">Extrato</div>
+      <div class="form-row" style="margin-bottom: 1rem;">
+        <select id="ext-conta" onchange="renderExtrato()"></select>
+      </div>
+      <div class="extrato-list" id="lista-extrato">
+        <div class="empty">Selecione uma conta</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
